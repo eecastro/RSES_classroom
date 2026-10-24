@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rosenberg Self-Esteem Scale · Psych 100</title>
+<meta name="description" content="Take the 10-item Rosenberg Self-Esteem Scale and see how it’s scored. Your answers stay in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%231f3b32'/></svg>">
+<style>
+/* =========================================================
+   INSTRUCTOR SETTINGS live in the script block at the bottom
+   (course name, campus counseling link). No server needed.
+   ========================================================= */
+:root {
+  --paper: #eef3ec;
+  --sheet: #f8faf6;
+  --ink: #1f3b32;
+  --ink-soft: #4d6b5f;
+  --rule: #a9c7b6;
+  --graphite: #33383d;
+  --amber: #9a5f0e;
+  --amber-wash: #f6ead4;
+  --band: #cfe2d6;
+  --focus: #1d6fd1;
+  --serif: "Iowan Old Style", "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #121c18;
+    --sheet: #18241f;
+    --ink: #e2ece6;
+    --ink-soft: #a4bcb1;
+    --rule: #3c5a4c;
+    --graphite: #e8ecef;
+    --amber: #e0a85a;
+    --amber-wash: #3a2c17;
+    --band: #284236;
+    --focus: #6aa8ff;
+    color-scheme: dark;
+  }
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 44rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+/* ---------- Header ---------- */
+header { margin-bottom: 2rem; }
+.course { font-family: var(--sans); font-size: .9rem; color: var(--ink-soft); margin: 0 0 .75rem; }
+h1 {
+  font-size: clamp(2rem, 6vw, 2.9rem);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  margin: 0 0 1rem;
+}
+.lede { margin: 0 0 1rem; max-width: 36rem; }
+.privacy {
+  font-family: var(--sans);
+  font-size: .9rem;
+  color: var(--ink-soft);
+  border-left: 3px solid var(--rule);
+  padding-left: .75rem;
+  margin: 0;
+}
+
+/* ---------- Answer sheet ---------- */
+.sheet {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1.5rem 1.25rem .5rem;
+}
+.instructions { margin: 0 0 1rem; font-size: 1rem; }
+.key {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: start;
+  gap: .25rem 1.25rem;
+  font-family: var(--sans);
+  font-size: .85rem;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+.key b { color: var(--ink); font-weight: 600; }
+@media (max-width: 30rem) { .key { grid-template-columns: repeat(2, auto); } }
+
+fieldset.item {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+  padding: 1.1rem 0 1.2rem;
+  min-width: 0;
+}
+fieldset.item.missing legend .stmt { text-decoration: underline wavy var(--amber); text-underline-offset: .3em; }
+.num { font-family: var(--sans); font-size: .9rem; color: var(--ink-soft); padding-top: .15rem; flex: 0 0 2rem; }
+legend { display: flex; padding: 0; margin: 0 0 .8rem; width: 100%; float: left; }
+legend + * { clear: both; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.bubbles { display: flex; gap: .4rem; flex-wrap: nowrap; margin-left: 2rem; }
+@media (max-width: 26rem) { .bubbles { margin-left: 0; } }
+.bubble { position: relative; flex: 0 0 auto; }
+.bubble input {
+  position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0;
+}
+.bubble label {
+  display: flex; flex-direction: column; align-items: center; gap: .3rem;
+  cursor: pointer; width: 4.6rem;
+  font-family: var(--sans);
+}
+.bubble .dot {
+  width: 2.4rem; height: 2.4rem; border-radius: 50%;
+  border: 1.5px solid var(--ink-soft);
+  display: grid; place-items: center;
+  font-size: .78rem; font-weight: 600; color: var(--ink-soft);
+  transition: background-color .12s ease, border-color .12s ease, color .12s ease;
+}
+.bubble .word { font-size: .72rem; line-height: 1.2; text-align: center; color: var(--ink-soft); }
+.bubble label:hover .dot { border-color: var(--ink); color: var(--ink); }
+.bubble input:checked + label .dot {
+  background: var(--graphite);
+  border-color: var(--graphite);
+  color: var(--sheet);
+}
+.bubble input:checked + label .word { color: var(--ink); font-weight: 600; }
+.bubble input:focus-visible + label .dot { outline: 3px solid var(--focus); outline-offset: 2px; }
+@media (max-width: 26rem) {
+  .bubble label { width: 3.9rem; }
+  .bubble .dot { width: 2.2rem; height: 2.2rem; }
+}
+
+.submit-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.25rem;
+  border-top: 1px solid var(--rule);
+  padding: 1.25rem 0 1rem;
+}
+button {
+  font-family: var(--sans); font-size: 1rem; font-weight: 600;
+  border-radius: 4px; padding: .7rem 1.2rem; cursor: pointer;
+  border: 1.5px solid var(--ink);
+}
+button.primary { background: var(--ink); color: var(--sheet); }
+button.primary:hover { filter: brightness(1.12); }
+button.secondary { background: transparent; color: var(--ink); }
+button.secondary:hover { background: var(--band); }
+button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.progress { font-family: var(--sans); font-size: .9rem; color: var(--ink-soft); margin: 0; }
+.progress.warn { color: var(--amber); font-weight: 600; }
+
+/* ---------- Results ---------- */
+#results { margin-top: 3rem; }
+#results[hidden] { display: none; }
+h2 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 1rem; font-weight: 600; }
+h3 { font-size: 1.2rem; margin: 2.5rem 0 .6rem; font-weight: 600; }
+.score-line { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; margin: 0 0 .25rem; }
+.score-big { font-size: 4.5rem; line-height: 1; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+.score-of { font-family: var(--sans); color: var(--ink-soft); }
+.alt-score { font-family: var(--sans); font-size: .9rem; color: var(--ink-soft); margin: 0 0 1.5rem; }
+
+/* number line */
+.scale { margin: 1.5rem 0 .5rem; }
+.track {
+  position: relative; height: 2.5rem;
+  border-bottom: 2px solid var(--ink);
+}
+.band {
+  position: absolute; bottom: 0; height: 1.1rem;
+  background: var(--band);
+  border: 1px solid var(--rule); border-bottom: 0;
+}
+.band span {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  font-family: var(--sans); font-size: .75rem; color: var(--ink-soft); white-space: nowrap;
+  padding-bottom: .15rem;
+}
+.marker {
+  position: absolute; bottom: -.55rem; width: 1.1rem; height: 1.1rem; margin-left: -.55rem;
+  border-radius: 50%; background: var(--graphite); border: 3px solid var(--paper);
+  box-shadow: 0 0 0 1.5px var(--graphite);
+}
+.tick-row {
+  position: relative; height: 1.6rem;
+  font-family: var(--sans); font-size: .78rem; color: var(--ink-soft);
+}
+.tick-row span { position: absolute; top: .45rem; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+.tick-row span:first-child { transform: none; }
+.tick-row span:last-child { transform: translateX(-100%); }
+.scale-caption { font-family: var(--sans); font-size: .82rem; color: var(--ink-soft); margin: .4rem 0 0; }
+
+.interp { margin: 1.5rem 0 0; }
+.care {
+  margin: 1.25rem 0 0;
+  padding: .9rem 1rem;
+  background: var(--amber-wash);
+  border-radius: 4px;
+  font-size: .98rem;
+}
+.care p { margin: 0 0 .5rem; }
+.care p:last-child { margin: 0; }
+a { color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: .2em; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* item table */
+.table-wrap { overflow-x: auto; margin: 0 -.25rem; }
+table { border-collapse: collapse; width: 100%; min-width: 30rem; font-size: .95rem; }
+th, td { text-align: left; vertical-align: top; padding: .6rem .4rem; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--sans); font-size: .8rem; font-weight: 600; color: var(--ink-soft); }
+td.n, td.pts { font-family: var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.ans { font-family: var(--sans); font-size: .88rem; white-space: nowrap; }
+tr.rev td { background: var(--amber-wash); }
+.flip { display: inline-block; font-family: var(--sans); font-size: .72rem; font-weight: 600; color: var(--amber); margin-left: .35rem; }
+.pips { display: inline-flex; gap: 3px; margin-left: .4rem; vertical-align: middle; }
+.pips i { width: .55rem; height: .55rem; border-radius: 50%; border: 1px solid var(--ink-soft); }
+.pips i.on { background: var(--ink); border-color: var(--ink); }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+.compare div { border-top: 2px solid var(--ink); padding-top: .5rem; }
+.compare .v { font-size: 1.8rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.compare .l { font-family: var(--sans); font-size: .85rem; color: var(--ink-soft); }
+
+.learn p, .learn li { max-width: 38rem; }
+.learn ul { padding-left: 1.2rem; }
+.learn li { margin-bottom: .5rem; }
+.refs { font-size: .9rem; color: var(--ink-soft); }
+.refs p { padding-left: 1.5rem; text-indent: -1.5rem; margin: 0 0 .5rem; }
+
+.after { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2.5rem; }
+footer { margin-top: 3rem; font-family: var(--sans); font-size: .82rem; color: var(--ink-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; scroll-behavior: auto !important; }
+}
+@media print {
+  :root { --paper: #fff; --sheet: #fff; }
+  #quiz, .after, .privacy { display: none !important; }
+  #results { margin-top: 0; }
+  body { font-size: 11pt; }
+  tr.rev td { background: #f3f3f3; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="course" id="courseName">Psych 100</p>
+  <h1>Rosenberg Self-Esteem Scale</h1>
+  <p class="lede">Ten statements about how you generally feel about yourself. It takes about two minutes. When you’re done, you’ll see your score and how the scale works behind the scenes.</p>
+  <p class="privacy">Your answers stay on this device. Nothing is saved or sent anywhere, so your instructor can’t see your responses. Refreshing the page clears everything.</p>
+</header>
+
+<form id="quiz" class="sheet" novalidate>
+  <p class="instructions">Below is a list of statements dealing with your general feelings about yourself. Choose the answer that fits best.</p>
+  <ul class="key" aria-hidden="true">
+    <li><b>SA</b> Strongly agree</li>
+    <li><b>A</b> Agree</li>
+    <li><b>D</b> Disagree</li>
+    <li><b>SD</b> Strongly disagree</li>
+  </ul>
+  <div id="items"></div>
+  <div class="submit-row">
+    <button type="submit" class="primary">See my results</button>
+    <p class="progress" id="progress" aria-live="polite">0 of 10 answered</p>
+  </div>
+</form>
+
+<section id="results" hidden aria-labelledby="resultsTitle" tabindex="-1">
+  <h2 id="resultsTitle">Your results</h2>
+
+  <div class="score-line">
+    <span class="score-big" id="scoreBig">–</span>
+    <span class="score-of">out of 30</span>
+  </div>
+  <p class="alt-score" id="altScore"></p>
+
+  <div class="scale" aria-hidden="true">
+    <div class="track" id="track">
+      <div class="band" id="band"><span>Typical range (15–25)</span></div>
+      <div class="marker" id="marker"></div>
+    </div>
+    <div class="tick-row" id="ticks"></div>
+  </div>
+  <p class="scale-caption">The dot is your score. The shaded band is a common rule of thumb for the typical range, not an official cutoff.</p>
+
+  <p class="interp" id="interp"></p>
+  <div class="care" id="care" hidden></div>
+
+  <h3>How each answer was scored</h3>
+  <p>Each answer is worth 0 to 3 points, where higher always means higher self-esteem. For half the statements, that meant flipping the points: on the highlighted items, <em>strongly disagreeing</em> is what earns 3.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th scope="col">#</th><th scope="col">Statement</th><th scope="col">You said</th><th scope="col">Points</th></tr></thead>
+      <tbody id="itemRows"></tbody>
+    </table>
+  </div>
+
+  <h3>Positively vs. negatively worded items</h3>
+  <p>Here are your average points (0–3) on the two kinds of statements, after flipping.</p>
+  <div class="compare">
+    <div><div class="v" id="posAvg">–</div><div class="l">Positively worded items (1, 3, 4, 7, 10)</div></div>
+    <div><div class="v" id="negAvg">–</div><div class="l">Negatively worded items (2, 5, 6, 8, 9)</div></div>
+  </div>
+  <p id="compareNote"></p>
+
+  <div class="learn">
+    <h3>What this scale is (and isn’t)</h3>
+    <p>Morris Rosenberg published this scale in 1965 after surveying about 5,000 high school students in New York State. It measures <em>global</em> self-esteem: your overall sense of your own worth, rather than how confident you feel about a specific skill like math or sports. It went on to become one of the most widely used self-report measures in psychology.</p>
+    <ul>
+      <li><strong>Why flip half the items?</strong> Some people tend to agree with statements no matter what they say (called <em>acquiescence bias</em>). Mixing positive and negative wording means a person who just agrees with everything lands near the middle instead of looking artificially high.</li>
+      <li><strong>Reliability.</strong> Across many studies the ten items hang together well (internal consistency is usually around .80 to .90), and scores are fairly stable over weeks and months.</li>
+      <li><strong>Validity.</strong> Scores relate in expected ways to other measures, such as being associated with life satisfaction and inversely associated with depression and anxiety. A correlation like this doesn’t tell us which causes which.</li>
+      <li><strong>Limits of self-report.</strong> Your score depends on honest, accurate self-reflection. Mood on the day, wanting to look good (<em>social desirability</em>), and cultural norms about modesty can all nudge scores.</li>
+      <li><strong>Not a diagnosis.</strong> This is a research and teaching tool. A single score says nothing definitive about you, and there are no official clinical cutoffs.</li>
+    </ul>
+
+    <h3>Questions to think about</h3>
+    <ul>
+      <li>Would your score change if you took this during finals week? What does that suggest about whether self-esteem is a stable <em>trait</em> or a changing <em>state</em>?</li>
+      <li>If someone wanted to look good, which items would be easiest to “fake”? How might a researcher catch that?</li>
+      <li>Rosenberg’s original sample was American teenagers in the early 1960s. What might change if you used this scale in a different culture or age group?</li>
+    </ul>
+
+    <h3>References</h3>
+    <div class="refs">
+      <p>Rosenberg, M. (1965). <em>Society and the adolescent self-image.</em> Princeton University Press.</p>
+      <p>Schmitt, D. P., &amp; Allik, J. (2005). Simultaneous administration of the Rosenberg Self-Esteem Scale in 53 nations: Exploring the universal and culture-specific features of global self-esteem. <em>Journal of Personality and Social Psychology, 89</em>(4), 623–642.</p>
+    </div>
+  </div>
+
+  <div class="after">
+    <button type="button" class="secondary" id="printBtn">Print or save as PDF</button>
+    <button type="button" class="secondary" id="resetBtn">Start over</button>
+  </div>
+</section>
+
+<footer>
+  <p>Scale items from Rosenberg (1965). Used here for educational purposes.</p>
+</footer>
+</div>
+
+<script>
+/* =========================================================
+   INSTRUCTOR SETTINGS: edit these three lines.
+   ========================================================= */
+const CONFIG = {
+  courseName: "Social-Cognitive Psychology",
+  // Your campus counseling center. Leave url as "" to hide the link.
+  counselingName: "St. Ignatius Wellness Counseling Department",
+  counselingUrl: "https://sites.google.com/siprep.org/wellness/home"
+};
+
+/* ---------- Scale definition ---------- */
+const ITEMS = [
+  { text: "On the whole, I am satisfied with myself.", reversed: false },
+  { text: "At times I think I am no good at all.", reversed: true },
+  { text: "I feel that I have a number of good qualities.", reversed: false },
+  { text: "I am able to do things as well as most other people.", reversed: false },
+  { text: "I feel I do not have much to be proud of.", reversed: true },
+  { text: "I certainly feel useless at times.", reversed: true },
+  { text: "I feel that I’m a person of worth, at least on an equal plane with others.", reversed: false },
+  { text: "I wish I could have more respect for myself.", reversed: true },
+  { text: "All in all, I am inclined to feel that I am a failure.", reversed: true },
+  { text: "I take a positive attitude toward myself.", reversed: false }
+];
+const OPTIONS = [
+  { key: "SA", label: "Strongly agree", pts: 3 },
+  { key: "A",  label: "Agree",          pts: 2 },
+  { key: "D",  label: "Disagree",       pts: 1 },
+  { key: "SD", label: "Strongly disagree", pts: 0 }
+];
+const MAX = 30, BAND_LO = 15, BAND_HI = 25;
+
+/* ---------- Build the answer sheet ---------- */
+document.getElementById("courseName").textContent = CONFIG.courseName;
+const itemsEl = document.getElementById("items");
+ITEMS.forEach((item, i) => {
+  const n = i + 1;
+  const fs = document.createElement("fieldset");
+  fs.className = "item";
+  fs.id = "item" + n;
+  fs.innerHTML =
+    `<legend><span class="num" aria-hidden="true">${n}.</span><span class="stmt"><span class="sr">Statement ${n}: </span>${item.text}</span></legend>` +
+    `<div class="bubbles">` +
+    OPTIONS.map((o, j) =>
+      `<div class="bubble"><input type="radio" name="q${n}" id="q${n}-${j}" value="${j}">` +
+      `<label for="q${n}-${j}"><span class="dot" aria-hidden="true">${o.key}</span><span class="word">${o.label}</span></label></div>`
+    ).join("") +
+    `</div>`;
+  itemsEl.appendChild(fs);
+});
+
+const form = document.getElementById("quiz");
+const progress = document.getElementById("progress");
+
+function answers() {
+  return ITEMS.map((_, i) => {
+    const c = form.querySelector(`input[name="q${i + 1}"]:checked`);
+    return c ? Number(c.value) : null;
+  });
+}
+function updateProgress() {
+  const done = answers().filter(a => a !== null).length;
+  progress.textContent = `${done} of 10 answered`;
+  progress.classList.remove("warn");
+}
+form.addEventListener("change", e => {
+  const fs = e.target.closest("fieldset");
+  if (fs) fs.classList.remove("missing");
+  updateProgress();
+});
+
+/* ---------- Score ---------- */
+function pointsFor(itemIdx, optIdx) {
+  const raw = OPTIONS[optIdx].pts;
+  return ITEMS[itemIdx].reversed ? 3 - raw : raw;
+}
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  const a = answers();
+  const missing = a.map((v, i) => v === null ? i + 1 : null).filter(Boolean);
+  document.querySelectorAll("fieldset.item").forEach(f => f.classList.remove("missing"));
+  if (missing.length) {
+    missing.forEach(n => document.getElementById("item" + n).classList.add("missing"));
+    progress.textContent = missing.length === ITEMS.length
+      ? "Answer all 10 statements to see your results."
+      : missing.length === 1
+      ? `Answer statement ${missing[0]} to see your results.`
+      : `Answer statements ${missing.join(", ")} to see your results.`;
+    progress.classList.add("warn");
+    const first = document.querySelector(`#item${missing[0]} input`);
+    document.getElementById("item" + missing[0]).scrollIntoView({ behavior: smooth(), block: "center" });
+    first.focus({ preventScroll: true });
+    return;
+  }
+  showResults(a);
+});
+
+function smooth() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+}
+
+function showResults(a) {
+  const pts = a.map((opt, i) => pointsFor(i, opt));
+  const total = pts.reduce((s, p) => s + p, 0);
+
+  document.getElementById("scoreBig").textContent = total;
+  document.getElementById("altScore").textContent =
+    `Some textbooks score each item 1–4 instead of 0–3. On that version, your score would be ${total + 10} out of 40.`;
+
+  // number line
+  const pct = v => (v / MAX) * 100;
+  const band = document.getElementById("band");
+  band.style.left = pct(BAND_LO) + "%";
+  band.style.width = (pct(BAND_HI) - pct(BAND_LO)) + "%";
+  document.getElementById("marker").style.left = pct(total) + "%";
+  document.getElementById("ticks").innerHTML =
+    [0, 5, 10, 15, 20, 25, 30].map(t => `<span style="left:${pct(t)}%">${t}</span>`).join("");
+
+  // interpretation
+  const interp = document.getElementById("interp");
+  const care = document.getElementById("care");
+  if (total < BAND_LO) {
+    interp.textContent = `A score of ${total} is below the range where most people fall. On this scale, that reflects more critical feelings about yourself right now. Scores can shift with stress, circumstances, and time, and one questionnaire can’t capture who you are.`;
+    const link = CONFIG.counselingUrl
+      ? `<a href="${CONFIG.counselingUrl}" target="_blank" rel="noopener">${CONFIG.counselingName}</a>`
+      : CONFIG.counselingName;
+    care.innerHTML =
+      `<p>If this matches how you’ve been feeling lately and it’s weighing on you, talking to someone can help. Students can reach out to ${link}.</p>` +
+      `<p>If you’re ever in crisis in the U.S., you can call or text <a href="tel:988">988</a> (Suicide &amp; Crisis Lifeline), any time.</p>`;
+    care.hidden = false;
+  } else if (total <= BAND_HI) {
+    interp.textContent = `A score of ${total} falls within the range where most people score. For comparison, in a large study of college students across 53 nations, U.S. students averaged roughly 22 on this 0–30 version (Schmitt & Allik, 2005).`;
+    care.hidden = true;
+  } else {
+    interp.textContent = `A score of ${total} is above the typical range, reflecting a generally positive view of yourself on this scale. Keep in mind that self-report scores can also run high when people answer the way they’d like to see themselves.`;
+    care.hidden = true;
+  }
+
+  // item table
+  document.getElementById("itemRows").innerHTML = ITEMS.map((item, i) => {
+    const o = OPTIONS[a[i]];
+    const p = pts[i];
+    const pips = [0, 1, 2].map(k => `<i class="${k < p ? "on" : ""}"></i>`).join("");
+    return `<tr class="${item.reversed ? "rev" : ""}">
+      <td class="n">${i + 1}</td>
+      <td>${item.text}${item.reversed ? '<span class="flip">reversed</span>' : ""}</td>
+      <td class="ans">${o.label}</td>
+      <td class="pts">${p}<span class="pips" aria-hidden="true">${pips}</span></td>
+    </tr>`;
+  }).join("");
+
+  // positive vs negative wording
+  const posIdx = ITEMS.map((it, i) => it.reversed ? null : i).filter(v => v !== null);
+  const negIdx = ITEMS.map((it, i) => it.reversed ? i : null).filter(v => v !== null);
+  const avg = idx => idx.reduce((s, i) => s + pts[i], 0) / idx.length;
+  const pa = avg(posIdx), na = avg(negIdx);
+  document.getElementById("posAvg").textContent = pa.toFixed(1);
+  document.getElementById("negAvg").textContent = na.toFixed(1);
+  const diff = pa - na;
+  let note;
+  if (Math.abs(diff) < 0.5) {
+    note = "Your two averages are close, so you answered both kinds of statements consistently.";
+  } else if (diff > 0) {
+    note = "You scored higher on the positively worded items. That’s common: many people readily agree they have good qualities while also admitting they feel useless at times.";
+  } else {
+    note = "You scored higher on the negatively worded items, meaning you rejected the negative statements more strongly than you endorsed the positive ones.";
+  }
+  note += " Researchers have found that the two kinds of items sometimes behave like separate clusters, partly because of how they’re worded. That’s a live debate about whether the scale measures one thing or two.";
+  document.getElementById("compareNote").textContent = note;
+
+  const res = document.getElementById("results");
+  res.hidden = false;
+  res.scrollIntoView({ behavior: smooth(), block: "start" });
+  res.focus({ preventScroll: true });
+}
+
+document.getElementById("printBtn").addEventListener("click", () => window.print());
+document.getElementById("resetBtn").addEventListener("click", () => {
+  form.reset();
+  document.querySelectorAll("fieldset.item").forEach(f => f.classList.remove("missing"));
+  document.getElementById("results").hidden = true;
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: smooth() });
+});
+</script>
+</body>
+</html>
