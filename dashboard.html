@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Self-Esteem Class Dashboard</title>
+<meta name="description" content="Instructor view of anonymous class results from the Rosenberg Self-Esteem Scale page: averages, score bands, item analysis and reliability by semester and section.">
+<meta name="author" content="Eric E Castro, Psychology Department, St Ignatius College Prep">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%231f3b32'/></svg>">
+<style>
+:root {
+  --bg: #eef3ec;
+  --surface: #f8faf6;
+  --ink: #1f3b32;
+  --muted: #4d6b5f;
+  --line: #c3d8cb;
+  --grid: #dfe9e2;
+  --accent: #1f3b32;
+  --accent-soft: #cfe2d6;
+  --accent-ink: #f8faf6;
+  --focus: #1d6fd1;
+  --up: #1F7A3A;
+  --down: #B3401F;
+  --s1: #2a78d6;              /* class average line */
+  --ref: #4d6b5f;
+  /* score bands */
+  --b-low: #c9822b; --b-mid: #3f8a68; --b-high: #2a78d6;
+  /* points earned on an item, 3 (high self-esteem) to 0 */
+  --p3: #1f6b4c; --p2: #7fb89b; --p1: #e7c08a; --p0: #b9671a;
+  --seq-lo: #e3efe7; --seq-hi: #1f6b4c;
+  --serif: "Iowan Old Style", "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121c18; --surface: #18241f; --ink: #e2ece6; --muted: #a4bcb1; --line: #34503f; --grid: #22342b;
+    --accent: #a8d5bf; --accent-soft: #284236; --accent-ink: #121c18; --focus: #6aa8ff;
+    --up: #6FD08C; --down: #FF9A7A; --s1: #5aa2f0; --ref: #a4bcb1;
+    --b-low: #e0a85a; --b-mid: #4fae84; --b-high: #5aa2f0;
+    --p3: #4fae84; --p2: #2f6b52; --p1: #7a5a2c; --p0: #e0a85a;
+    --seq-lo: #1d2c25; --seq-hi: #4fae84;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121c18; --surface: #18241f; --ink: #e2ece6; --muted: #a4bcb1; --line: #34503f; --grid: #22342b;
+  --accent: #a8d5bf; --accent-soft: #284236; --accent-ink: #121c18; --focus: #6aa8ff;
+  --up: #6FD08C; --down: #FF9A7A; --s1: #5aa2f0; --ref: #a4bcb1;
+  --b-low: #e0a85a; --b-mid: #4fae84; --b-high: #5aa2f0;
+  --p3: #4fae84; --p2: #2f6b52; --p1: #7a5a2c; --p0: #e0a85a;
+  --seq-lo: #1d2c25; --seq-hi: #4fae84;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--sans); }
+main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
+h1, h2, h3 { font-family: var(--serif); line-height: 1.2; margin: 0; font-weight: 600; }
+h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1rem; }
+p { margin: 0; }
+a { color: var(--ink); text-underline-offset: .2em; }
+code { font-size: .9em; }
+.sub { color: var(--muted); margin-top: 6px; max-width: 72ch; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
+.card + .card, .grid + .card, .card + .grid { margin-top: 16px; }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 14px; }
+.card-head p { color: var(--muted); font-size: 0.9rem; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: end; margin: 20px 0 16px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+select, input[type=password] {
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 6px; padding: 7px 10px; min-height: 38px;
+}
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.seg button { font: inherit; border: 0; background: none; color: var(--ink); padding: 7px 14px; cursor: pointer; min-height: 38px; }
+.seg button[aria-pressed=true] { background: var(--accent); color: var(--accent-ink); }
+.btn { font: inherit; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 7px 14px; cursor: pointer; min-height: 38px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.btn:hover { border-color: var(--accent); }
+.spacer { flex: 1; }
+.status { color: var(--muted); font-size: 0.9rem; min-height: 1.5em; margin-bottom: 8px; }
+.demo-flag { display: inline-block; background: var(--accent-soft); color: var(--ink); border-radius: 999px; padding: 2px 10px; font: 600 0.8rem var(--sans); margin-left: 8px; vertical-align: middle; }
+
+#connect { max-width: 560px; margin-top: 24px; }
+#connect form { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 10px; }
+#connect input[type=password] { flex: 1 1 240px; }
+#connect label.check { display: flex; gap: 8px; align-items: center; font-size: 0.9rem; color: var(--muted); }
+#connect .err { color: var(--down); font-weight: 600; margin-top: 8px; }
+#connect ol { padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; margin: 12px 0 0; }
+
+.grid { display: grid; gap: 16px; }
+.grid > .card { margin-top: 0 !important; }
+.kpis { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.two { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.kpi .label { color: var(--muted); font-size: 0.85rem; }
+.kpi .value { font-family: var(--serif); font-size: 2.2rem; font-weight: 600; line-height: 1.1; margin: 4px 0; font-variant-numeric: lining-nums tabular-nums; }
+.kpi .value small { font-family: var(--sans); font-size: 0.95rem; font-weight: 400; color: var(--muted); }
+.kpi .note { font-size: 0.85rem; color: var(--muted); }
+.delta { font-weight: 600; white-space: nowrap; }
+.delta.up { color: var(--up); }
+.delta.down { color: var(--down); }
+.delta.flat { color: var(--muted); }
+
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--sans); fill: var(--muted); font-size: 12px; }
+.chart .gridline { stroke: var(--grid); stroke-width: 1; }
+.chart .axis { stroke: var(--line); stroke-width: 1; }
+.chart .series { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.chart .ref { stroke: var(--ref); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .marker { stroke: var(--surface); stroke-width: 2; }
+.chart .cross { stroke: var(--muted); stroke-width: 1; }
+.chart .nlabel { font-size: 11px; }
+.chart .hidden-n { fill: var(--muted); font-style: italic; }
+.chart .v { fill: var(--ink); font-size: 11px; }
+.chart .band-txt { font-size: 11px; fill: var(--muted); }
+.tip {
+  position: absolute; pointer-events: none; z-index: 5; min-width: 160px; max-width: 260px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.14); padding: 10px 12px; font-size: 0.85rem; line-height: 1.4;
+}
+.tip .row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.tip .row span:first-child { display: inline-flex; align-items: center; gap: 6px; }
+.tip .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.tip .muted { color: var(--muted); }
+.cap { color: var(--muted); font-size: 0.82rem; margin-top: 6px; }
+
+.bands { display: flex; height: 14px; border-radius: 7px; overflow: hidden; margin: 14px 0 8px; background: var(--grid); }
+.bands i { display: block; height: 100%; }
+.band-key { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.88rem; }
+.band-key span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+.stats-line { display: flex; flex-wrap: wrap; gap: 4px 22px; margin-top: 12px; font-size: 0.9rem; color: var(--muted); }
+.stats-line b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: middle; }
+th { font-weight: 600; color: var(--muted); font-size: 0.8rem; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.stmt { white-space: normal; min-width: 240px; max-width: 380px; font-family: var(--serif); }
+.rev-tag { display: inline-block; font: 600 0.72rem var(--sans); color: var(--b-low); margin-left: 6px; }
+.stack { display: flex; height: 16px; width: 200px; border-radius: 4px; overflow: hidden; background: var(--grid); }
+.stack i { display: block; height: 100%; }
+.flag { color: var(--down); font-weight: 600; }
+.heat { text-align: center; font-variant-numeric: tabular-nums; border-radius: 6px; }
+.suppressed { color: var(--muted); font-style: italic; }
+details.tableview { margin-top: 12px; }
+details.tableview summary { cursor: pointer; color: var(--ink); font-size: 0.9rem; text-decoration: underline; text-underline-offset: .2em; }
+.legend-inline { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.82rem; color: var(--muted); margin-top: 10px; align-items: center; }
+.legend-inline span { display: inline-flex; align-items: center; gap: 6px; }
+
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 14px; }
+.pair > div { border-top: 2px solid var(--ink); padding-top: 8px; }
+.pair .v { font-family: var(--serif); font-size: 1.9rem; font-weight: 600; line-height: 1.1; font-variant-numeric: lining-nums tabular-nums; }
+.pair .l { font-size: 0.85rem; color: var(--muted); }
+.meter { position: relative; height: 10px; background: var(--grid); border-radius: 5px; margin: 26px 0 6px; max-width: 520px; }
+.meter .mid { position: absolute; left: 50%; top: -6px; bottom: -6px; border-left: 2px dashed var(--ref); }
+.meter .pin { position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--s1); border: 3px solid var(--surface); box-shadow: 0 0 0 1.5px var(--s1); }
+.meter-ends { display: flex; justify-content: space-between; max-width: 520px; font-size: 0.8rem; color: var(--muted); }
+.prose p + p { margin-top: 8px; }
+.prose { max-width: 75ch; }
+
+.notes { color: var(--muted); font-size: 0.88rem; }
+.notes ul { margin: 8px 0 0; padding-left: 1.2em; }
+.notes li + li { margin-top: 4px; }
+footer { margin-top: 28px; color: var(--muted); font-size: 0.85rem; }
+[hidden] { display: none !important; }
+@media (max-width: 560px) {
+  .card { padding: 16px; }
+  .kpi .value { font-size: 1.8rem; }
+  .spacer { display: none; }
+}
+@media print {
+  .toolbar, #connect, details.tableview summary, .btn { display: none !important; }
+  body { background: #fff; }
+  .card { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Self-esteem class dashboard <span class="demo-flag" id="demo-flag" hidden>Sample data</span></h1>
+    <p class="sub">Anonymous class results from the <a href="./">Rosenberg Self-Esteem Scale</a> page, by semester or school year. Groups with fewer than <span class="min-n">5</span> students are hidden, and no individual responses are shown.</p>
+  </header>
+
+  <section id="connect" class="card" hidden>
+    <h2>Connect to your Sheet</h2>
+    <p class="sub">Enter the dashboard key from your Google Sheet’s Apps Script.</p>
+    <form id="key-form">
+      <label class="sr" for="key">Dashboard key</label>
+      <input id="key" type="password" autocomplete="off" spellcheck="false" placeholder="Dashboard key" required>
+      <button class="btn primary" type="submit">Connect</button>
+    </form>
+    <label class="check"><input type="checkbox" id="remember"> Remember the key on this device</label>
+    <p class="err" id="key-err" hidden></p>
+    <ol>
+      <li>In the Sheet, open <b>Extensions › Apps Script</b>.</li>
+      <li>Choose <code>setDashboardKey</code> in the function menu and click <b>Run</b>. Copy the key it shows.</li>
+      <li>If you just updated <code>Code.gs</code>, redeploy it first: <b>Deploy › Manage deployments › Edit › New version</b>.</li>
+    </ol>
+    <p class="sub" style="margin-top:12px">Want to look around first? <a href="?demo">Open the dashboard with sample data.</a></p>
+  </section>
+
+  <div id="dash" hidden>
+    <div class="toolbar" role="group" aria-label="Dashboard filters">
+      <div class="field">Group by
+        <div class="seg" id="grain">
+          <button type="button" data-grain="semesters" aria-pressed="true">Semester</button>
+          <button type="button" data-grain="years" aria-pressed="false">School year</button>
+        </div>
+      </div>
+      <label class="field">Section
+        <select id="section"></select>
+      </label>
+      <label class="field">Focus on
+        <select id="focus"></select>
+      </label>
+      <div class="spacer"></div>
+      <button class="btn" type="button" id="refresh">Refresh</button>
+      <button class="btn" type="button" id="csv">Download CSV</button>
+      <button class="btn" type="button" id="signout">Forget key</button>
+    </div>
+    <p class="status" id="status" role="status"></p>
+
+    <div class="grid kpis" id="kpis"></div>
+
+    <section class="card" aria-labelledby="trend-h">
+      <div class="card-head">
+        <h2 id="trend-h">Over time</h2>
+        <p id="trend-sub"></p>
+      </div>
+      <div class="grid two">
+        <div>
+          <h3>Average score (0–30)</h3>
+          <div class="chart" id="trend"></div>
+          <p class="cap">Dashed line: about 22, the U.S. college-student average in Schmitt &amp; Allik (2005).</p>
+        </div>
+        <div>
+          <h3>Share below the typical range (under <span class="band-lo">15</span>)</h3>
+          <div class="chart" id="trend-low"></div>
+          <p class="cap">Share of students in each term, not a count of who.</p>
+        </div>
+      </div>
+      <details class="tableview"><summary>Show as a table</summary><div class="table-wrap" id="trend-table"></div></details>
+    </section>
+
+    <section class="card" aria-labelledby="dist-h">
+      <div class="card-head">
+        <h2 id="dist-h">Score distribution</h2>
+        <p>Share of students in each 3-point range. Dashed line: class average.</p>
+      </div>
+      <div class="chart" id="hist"></div>
+      <div class="bands" id="bands" aria-hidden="true"></div>
+      <div class="band-key" id="band-key"></div>
+      <div class="stats-line" id="stats-line"></div>
+    </section>
+
+    <section class="card" aria-labelledby="items-h">
+      <div class="card-head">
+        <h2 id="items-h">Item analysis</h2>
+        <p id="items-sub"></p>
+      </div>
+      <div class="table-wrap" id="items"></div>
+      <div class="legend-inline" id="items-key"></div>
+    </section>
+
+    <section class="card" aria-labelledby="word-h">
+      <div class="card-head">
+        <h2 id="word-h">Wording and response style</h2>
+        <p>Useful for teaching reverse scoring and acquiescence bias.</p>
+      </div>
+      <div id="wording"></div>
+    </section>
+
+    <section class="card" aria-labelledby="sec-h">
+      <div class="card-head">
+        <h2 id="sec-h">Sections</h2>
+        <p id="sec-sub"></p>
+      </div>
+      <div class="table-wrap" id="sections"></div>
+    </section>
+
+    <section class="card notes" aria-labelledby="notes-h">
+      <h2 id="notes-h">Reading these numbers</h2>
+      <ul>
+        <li>These are class results for teaching and discussion. They describe groups, never a student, and who chooses to take the scale moves the numbers.</li>
+        <li>Scores run 0–30 (each item 0–3, items 2, 5, 6, 8 and 9 reverse-scored). Add 10 for the 1–4 scoring some textbooks use.</li>
+        <li>The 15–25 “typical range” is a rule of thumb, not a clinical cutoff. The scale has no official cutoffs and is not a screener.</li>
+        <li>If the share below 15 looks high for a section, the dashboard can’t tell you who. A general reminder to the whole class about counseling resources is the right response.</li>
+        <li>Reliability (Cronbach’s alpha) around .80–.90 is typical for this scale in published studies. Item-total correlation shows how well each item tracks the other nine; low values flag items students may be reading differently.</li>
+        <li>Semesters come from the date each response was saved: Fall runs from the start of the school year through December, Spring from January on.</li>
+      </ul>
+    </section>
+  </div>
+
+  <footer>
+    Developed by Eric E Castro, Psychology Department, St Ignatius College Prep. Instructor view; please don’t share the key with students.
+  </footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Settings: keep sheetUrl the same as CONFIG.sheetUrl in index.html ---------- */
+  var SHEET_URL = "";
+  var US_MEAN = 22;   // Schmitt & Allik (2005), U.S. college students, on the 0–30 scoring
+
+  var ITEMS = [
+    { text: "On the whole, I am satisfied with myself.", reversed: false },
+    { text: "At times I think I am no good at all.", reversed: true },
+    { text: "I feel that I have a number of good qualities.", reversed: false },
+    { text: "I am able to do things as well as most other people.", reversed: false },
+    { text: "I feel I do not have much to be proud of.", reversed: true },
+    { text: "I certainly feel useless at times.", reversed: true },
+    { text: "I feel that I’m a person of worth, at least on an equal plane with others.", reversed: false },
+    { text: "I wish I could have more respect for myself.", reversed: true },
+    { text: "All in all, I am inclined to feel that I am a failure.", reversed: true },
+    { text: "I take a positive attitude toward myself.", reversed: false }
+  ];
+  var ANSWERS = ["Strongly agree", "Agree", "Disagree", "Strongly disagree"];
+  var KEY_STORE = "rses-dash-key";
+
+  /* ---------- Small helpers ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  };
+  function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function f1(v) { return v == null ? "–" : v.toFixed(1); }
+  function f2(v) { return v == null ? "–" : v.toFixed(2); }
+  function r2(v) { return v == null ? "–" : (v < 0 ? "−" : "") + Math.abs(v).toFixed(2).replace(/^0/, ""); }
+  function pctTxt(v) { return v == null ? "–" : Math.round(v) + "%"; }
+  function getKey() {
+    var v = null;
+    try { v = sessionStorage.getItem(KEY_STORE) || localStorage.getItem(KEY_STORE); } catch (e) {}
+    return v;
+  }
+  function saveKey(key, remember) {
+    try { sessionStorage.setItem(KEY_STORE, key); } catch (e) {}
+    try { if (remember) localStorage.setItem(KEY_STORE, key); else localStorage.removeItem(KEY_STORE); } catch (e) {}
+  }
+  function forgetKey() {
+    try { sessionStorage.removeItem(KEY_STORE); } catch (e) {}
+    try { localStorage.removeItem(KEY_STORE); } catch (e) {}
+  }
+
+  var DEMO = /[?&]demo\b/.test(location.search);
+  var state = { data: null, grain: "semesters", section: "", focus: null };
+
+  /* ---------- Loading ---------- */
+  function load() {
+    if (DEMO) { $("demo-flag").hidden = false; setData(demoData()); return; }
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(SHEET_URL)) {
+      showConnect("This dashboard isn’t connected to a Sheet yet. Paste your Apps Script web app URL into SHEET_URL near the top of the script in dashboard.html (see the README).");
+      return;
+    }
+    var key = getKey();
+    if (!key) { showConnect(); return; }
+    $("status").textContent = "Loading class results…";
+    fetch(SHEET_URL + "?view=dashboard&key=" + encodeURIComponent(key) + "&t=" + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) {
+          if (d && (d.error === "bad-key" || d.error === "no-key")) { forgetKey(); showConnect(d.message); return; }
+          throw new Error((d && d.message) || "unexpected");
+        }
+        setData(d);
+      })
+      .catch(function () {
+        var msg = "Couldn’t reach the Sheet. Check your connection and that Code.gs is deployed as a web app, then try again.";
+        if (!state.data) showConnect(msg); else $("status").textContent = msg;
+      });
+  }
+  function showConnect(msg) {
+    $("dash").hidden = true;
+    $("connect").hidden = false;
+    $("key-err").hidden = !msg;
+    $("key-err").textContent = msg || "";
+    $("key").focus();
+  }
+  function setData(d) {
+    state.data = d;
+    document.querySelectorAll(".min-n").forEach(function (el) { el.textContent = d.minN; });
+    document.querySelectorAll(".band-lo").forEach(function (el) { el.textContent = d.bandLo; });
+    $("connect").hidden = true;
+    $("dash").hidden = false;
+    $("status").textContent = (DEMO ? "Sample data, made up to show the layout. " : "") +
+      d.total + " responses in all. Updated " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) + ".";
+    buildSectionOptions();
+    state.focus = null;
+    render();
+  }
+
+  /* ---------- Data shaping ---------- */
+  function groups() { return state.data[state.grain] || []; }
+  function view(g) {
+    if (!state.section) return g;
+    var s = (g.sections || []).filter(function (x) { return x.section === state.section; })[0];
+    return s || { n: 0 };
+  }
+  function visible(s) { return s && s.n >= state.data.minN && s.mean != null; }
+  function focusIndex() {
+    var gs = groups();
+    if (state.focus != null && state.focus < gs.length) return state.focus;
+    for (var i = gs.length - 1; i >= 0; i--) if (visible(view(gs[i]))) return i;
+    return gs.length - 1;
+  }
+  function prevVisible(i) {
+    var gs = groups();
+    for (var j = i - 1; j >= 0; j--) if (visible(view(gs[j]))) return j;
+    return -1;
+  }
+  function termTitle() {
+    var g = groups()[focusIndex()];
+    return g.label + (state.section ? " · " + state.section : "");
+  }
+  function buildSectionOptions() {
+    var names = {};
+    ["semesters", "years"].forEach(function (k) {
+      (state.data[k] || []).forEach(function (g) { (g.sections || []).forEach(function (s) { names[s.section] = 1; }); });
+    });
+    var list = Object.keys(names).sort();
+    if (state.section && !names[state.section]) state.section = "";
+    $("section").innerHTML = '<option value="">All sections</option>' + list.map(function (s) {
+      return '<option value="' + esc(s) + '"' + (s === state.section ? " selected" : "") + ">" + esc(s) + "</option>";
+    }).join("");
+    $("section").disabled = list.length < 2 && !(list.length === 1 && list[0] !== "(no section)");
+  }
+  function buildFocusOptions() {
+    var gs = groups(), fi = focusIndex();
+    $("focus").innerHTML = gs.map(function (g, i) {
+      return '<option value="' + i + '"' + (i === fi ? " selected" : "") + ">" + esc(g.label) + "</option>";
+    }).join("");
+  }
+
+  /* ---------- Render ---------- */
+  function render() {
+    if (!state.data) return;
+    buildFocusOptions();
+    if (!groups().length) {
+      $("kpis").innerHTML = '<div class="card">No responses yet. Results appear here once students see their scores on the page.</div>';
+      ["trend", "trend-low", "trend-table", "hist", "bands", "band-key", "stats-line", "items", "items-key", "wording", "sections"].forEach(function (id) { $(id).innerHTML = ""; });
+      return;
+    }
+    renderKpis();
+    renderTrend();
+    renderDist();
+    renderItems();
+    renderWording();
+    renderSections();
+  }
+
+  function deltaHtml(now, before, unit, goodHigh) {
+    if (now == null || before == null) return "";
+    var d = now - before;
+    var txt = unit === "%" ? Math.abs(Math.round(d)) + " pts" : Math.abs(d).toFixed(unit === "r" ? 2 : 1);
+    if (Math.abs(d) < (unit === "%" ? 1 : unit === "r" ? 0.02 : 0.1)) return '<span class="delta flat">≈ same</span>';
+    var good = goodHigh === false ? d < 0 : d > 0;
+    return '<span class="delta ' + (good ? "up" : "down") + '">' + (d > 0 ? "▲ " : "▼ ") + txt + "</span>";
+  }
+
+  function renderKpis() {
+    var gs = groups(), i = focusIndex(), g = gs[i], s = view(g);
+    var pi = prevVisible(i), p = pi >= 0 ? view(gs[pi]) : null;
+    var vs = p ? " vs " + esc(gs[pi].label) : "";
+    var tiles = [];
+    tiles.push('<div class="card kpi"><div class="label">Students, ' + esc(termTitle()) + '</div><div class="value">' + s.n + '</div><div class="note">' +
+      (visible(s) ? (p ? p.n + " in " + esc(gs[pi].label) : "First term with enough responses") : "Fewer than " + state.data.minN + ", so results are hidden") + "</div></div>");
+    if (visible(s)) {
+      tiles.push('<div class="card kpi"><div class="label">Average score</div><div class="value">' + f1(s.mean) + ' <small>of 30</small></div><div class="note">' +
+        (p ? deltaHtml(s.mean, p.mean, "", true) + vs + " · " : "") + "U.S. college ≈ " + US_MEAN + "</div></div>");
+      tiles.push('<div class="card kpi"><div class="label">Below the typical range (&lt; ' + state.data.bandLo + ')</div><div class="value">' + pctTxt(s.low) +
+        '</div><div class="note">' + (p ? deltaHtml(s.low, p.low, "%", false) + vs : "Share of students, not who") + "</div></div>");
+      tiles.push('<div class="card kpi"><div class="label">Reliability (Cronbach’s α)</div><div class="value">' + r2(s.alpha) +
+        '</div><div class="note">' + (s.alpha == null ? "Not enough variation to compute" : s.alpha >= 0.8 ? "In the usual published range (.80–.90)" : s.alpha >= 0.7 ? "Acceptable; a bit below the usual range" : "Lower than usual for this scale") + "</div></div>");
+    }
+    $("kpis").innerHTML = tiles.join("");
+  }
+
+  /* ---------- Line chart (shared by the trend and the small multiples) ---------- */
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function niceStep(range) {
+    var steps = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 25];
+    for (var i = 0; i < steps.length; i++) if (range / steps[i] <= 6) return steps[i];
+    return 25;
+  }
+
+  // opts: { labels, ns, series:[{name,color,values}], yMin, yMax, fmt, ref:{value,label}, height, tipTitle }
+  function lineChart(box, opts) {
+    box.innerHTML = "";
+    var W = Math.max(280, box.clientWidth || 600), H = opts.height || 300;
+    var m = { t: 14, r: 16, b: opts.showN === false ? 28 : 44, l: 40 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": opts.aria || "" }, box);
+    var n = opts.labels.length;
+    var x = function (i) { return m.l + (n === 1 ? iw / 2 : iw * i / (n - 1)); };
+    var y = function (v) { return m.t + ih - (v - opts.yMin) / (opts.yMax - opts.yMin) * ih; };
+
+    var step = niceStep(opts.yMax - opts.yMin);
+    for (var v = Math.ceil(opts.yMin / step - 1e-9) * step; v <= opts.yMax + 1e-9; v += step) {
+      el("line", { "class": "gridline", x1: m.l, x2: W - m.r, y1: y(v), y2: y(v) }, svg);
+      var t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, svg);
+      t.textContent = opts.fmt(v);
+    }
+    el("line", { "class": "axis", x1: m.l, x2: W - m.r, y1: m.t + ih, y2: m.t + ih }, svg);
+
+    // x labels: thin out when crowded
+    var every = Math.ceil(n / Math.max(1, Math.floor(iw / 78)));
+    opts.labels.forEach(function (lab, i) {
+      if (i % every && i !== n - 1) return;
+      var t = el("text", { x: x(i), y: m.t + ih + 18, "text-anchor": "middle" }, svg);
+      t.textContent = lab;
+      if (opts.showN !== false) {
+        var nt = el("text", { "class": "nlabel" + (opts.ns[i] < state.data.minN ? " hidden-n" : ""), x: x(i), y: m.t + ih + 34, "text-anchor": "middle" }, svg);
+        nt.textContent = "n=" + opts.ns[i];
+      }
+    });
+
+    if (opts.ref) {
+      // the caption under each small chart names the national figure, so the line itself stays unlabeled
+      el("line", { "class": "ref", x1: m.l, x2: W - m.r, y1: y(opts.ref.value), y2: y(opts.ref.value) }, svg);
+    }
+
+    opts.series.forEach(function (s) {
+      var d = "", pen = false;
+      s.values.forEach(function (v, i) {
+        if (v == null) { pen = false; return; }
+        d += (pen ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1);
+        pen = true;
+      });
+      if (d) el("path", { "class": "series", d: d, stroke: s.color }, svg);
+      s.values.forEach(function (v, i) {
+        if (v == null) return;
+        // isolated points (no neighbour on either side) need a marker to be seen at all
+        var lone = (i === 0 || s.values[i - 1] == null) && (i === n - 1 || s.values[i + 1] == null);
+        if (lone || n <= 8) el("circle", { "class": "marker", cx: x(i), cy: y(v), r: lone ? 5 : 4, fill: s.color }, svg);
+      });
+    });
+
+    // Hover / touch: crosshair + tooltip
+    var cross = el("line", { "class": "cross", x1: 0, x2: 0, y1: m.t, y2: m.t + ih, visibility: "hidden" }, svg);
+    var hit = el("rect", { x: m.l - 20, y: 0, width: iw + 40, height: H, fill: "transparent" }, svg);
+    var tip = document.createElement("div");
+    tip.className = "tip"; tip.hidden = true; box.appendChild(tip);
+    function show(evt) {
+      var r = svg.getBoundingClientRect();
+      var px = (evt.clientX - r.left) * W / r.width;
+      var i = n === 1 ? 0 : Math.max(0, Math.min(n - 1, Math.round((px - m.l) / iw * (n - 1))));
+      cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+      var rows = opts.series.map(function (s) {
+        return '<div class="row"><span><i class="sw" style="background:' + s.color + '"></i>' + esc(s.name) + "</span><span>" +
+          (s.values[i] == null ? "–" : opts.fmt(s.values[i], true)) + "</span></div>";
+      }).join("");
+      tip.innerHTML = "<b>" + esc(opts.labels[i]) + "</b> <span class='muted'>n=" + opts.ns[i] + "</span>" +
+        (opts.ns[i] < state.data.minN ? "<div class='muted'>Fewer than " + state.data.minN + " students: hidden</div>" : rows) +
+        (opts.tipExtra ? opts.tipExtra(i) : "");
+      tip.hidden = false;
+      var left = x(i) / W * r.width + 12;
+      if (left + tip.offsetWidth > r.width) left = x(i) / W * r.width - tip.offsetWidth - 12;
+      tip.style.left = Math.max(0, left) + "px";
+      tip.style.top = "8px";
+    }
+    function hide() { tip.hidden = true; cross.setAttribute("visibility", "hidden"); }
+    hit.addEventListener("pointermove", show);
+    hit.addEventListener("pointerdown", show);
+    hit.addEventListener("pointerleave", hide);
+  }
+
+  /* ---------- Trend ---------- */
+  function renderTrend() {
+    var gs = groups(), vs = gs.map(view);
+    var labels = gs.map(function (g) { return g.label; }), ns = vs.map(function (s) { return s.n; });
+    $("trend-sub").textContent = (state.section ? "Section " + state.section + ". " : "") + "Terms with fewer than " + state.data.minN + " students are left out of the lines.";
+    var means = vs.map(function (s) { return visible(s) ? s.mean : null; });
+    var all = means.filter(function (v) { return v != null; }).concat([US_MEAN]);
+    var lo = Math.max(0, Math.floor((Math.min.apply(null, all) - 2) / 2) * 2), hi = Math.min(30, Math.ceil((Math.max.apply(null, all) + 2) / 2) * 2);
+    lineChart($("trend"), {
+      labels: labels, ns: ns, series: [{ name: "Class average", color: cssVar("--s1"), values: means }],
+      yMin: lo, yMax: hi, height: 240, ref: { value: US_MEAN },
+      fmt: function (v, tip) { return tip ? v.toFixed(1) : String(Math.round(v)); },
+      tipExtra: function () { return "<div class='muted'>U.S. college ≈ " + US_MEAN + "</div>"; },
+      aria: "Line chart of the class average score by term. The same data is in the table below."
+    });
+    var lows = vs.map(function (s) { return visible(s) ? s.low : null; });
+    var top = Math.max.apply(null, lows.filter(function (v) { return v != null; }).concat([10]));
+    lineChart($("trend-low"), {
+      labels: labels, ns: ns, series: [{ name: "Below " + state.data.bandLo, color: cssVar("--b-low"), values: lows }],
+      yMin: 0, yMax: Math.min(100, Math.ceil((top + 5) / 10) * 10), height: 240,
+      fmt: function (v) { return Math.round(v) + "%"; },
+      aria: "Line chart of the share of students scoring below " + state.data.bandLo + " by term. The same data is in the table below."
+    });
+    var head = "<tr><th>" + (state.grain === "years" ? "School year" : "Semester") + '</th><th class="num">Students</th><th class="num">Average</th><th class="num">SD</th>' +
+      '<th class="num">Below ' + state.data.bandLo + '</th><th class="num">' + state.data.bandLo + "–" + state.data.bandHi + '</th><th class="num">Above ' + state.data.bandHi + '</th><th class="num">α</th></tr>';
+    var body = gs.map(function (g, i) {
+      var s = vs[i];
+      if (!visible(s)) return "<tr><td>" + esc(g.label) + '</td><td class="num">' + s.n + '</td><td class="num suppressed" colspan="6">hidden</td></tr>';
+      return "<tr><td>" + esc(g.label) + '</td><td class="num">' + s.n + '</td><td class="num">' + f1(s.mean) + '</td><td class="num">' + f1(s.sd) +
+        '</td><td class="num">' + pctTxt(s.low) + '</td><td class="num">' + pctTxt(s.mid) + '</td><td class="num">' + pctTxt(s.high) + '</td><td class="num">' + r2(s.alpha) + "</td></tr>";
+    }).join("");
+    $("trend-table").innerHTML = "<table>" + head + body + "</table>";
+  }
+
+  /* ---------- Distribution for the focus term ---------- */
+  function renderDist() {
+    var s = view(groups()[focusIndex()]);
+    $("dist-h").textContent = "Score distribution, " + termTitle();
+    if (!visible(s)) {
+      $("hist").innerHTML = '<p class="suppressed">' + s.n + " students. Results appear once at least " + state.data.minN + " have taken part.</p>";
+      ["bands", "band-key", "stats-line"].forEach(function (id) { $(id).innerHTML = ""; });
+      return;
+    }
+    var box = $("hist");
+    box.innerHTML = "";
+    var W = Math.max(300, box.clientWidth || 700), H = 220, m = { t: 20, r: 6, b: 26, l: 6 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b, bins = s.hist.length, bw = iw / bins, gap = Math.min(6, bw * 0.12);
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Histogram of scores in 3-point ranges. Class average " + f1(s.mean) + "." }, box);
+    var top = Math.max.apply(null, s.hist.concat([1]));
+    var lo = state.data.bandLo, hi = state.data.bandHi;
+    s.hist.forEach(function (v, i) {
+      var from = i * 3, to = i === bins - 1 ? 30 : i * 3 + 2;
+      var col = to < lo ? cssVar("--b-low") : from > hi ? cssVar("--b-high") : cssVar("--b-mid");
+      var h = (v || 0) / top * ih, x = m.l + i * bw + gap / 2, y = m.t + ih - h;
+      var r = el("rect", { x: x, y: y, width: bw - gap, height: Math.max(0, h), rx: 3, fill: col }, svg);
+      el("title", {}, r).textContent = from + "–" + to + ": " + pctTxt(v);
+      if (v > 0) el("text", { "class": "v", x: x + (bw - gap) / 2, y: y - 5, "text-anchor": "middle" }, svg).textContent = pctTxt(v);
+      if (bw >= 44 || i % 2 === 0) el("text", { x: x + (bw - gap) / 2, y: H - 8, "text-anchor": "middle" }, svg).textContent = bw >= 44 ? from + "–" + to : String(from);
+    });
+    el("line", { "class": "axis", x1: m.l, x2: W - m.r, y1: m.t + ih, y2: m.t + ih }, svg);
+    // mean marker: bins are 3 points wide, the last one 4 (27–30)
+    var mx = m.l + Math.min(bins, s.mean / 3) * bw;
+    el("line", { "class": "ref", x1: mx, x2: mx, y1: m.t - 8, y2: m.t + ih, style: "stroke:" + cssVar("--ink") }, svg);
+
+    $("bands").innerHTML = '<i style="width:' + s.low + "%;background:" + cssVar("--b-low") + '"></i><i style="width:' + s.mid + "%;background:" +
+      cssVar("--b-mid") + '"></i><i style="width:' + s.high + "%;background:" + cssVar("--b-high") + '"></i>';
+    $("band-key").innerHTML =
+      '<span><i class="sw" style="background:' + cssVar("--b-low") + '"></i>Below ' + lo + ": <b>" + pctTxt(s.low) + "</b></span>" +
+      '<span><i class="sw" style="background:' + cssVar("--b-mid") + '"></i>Typical range ' + lo + "–" + hi + ": <b>" + pctTxt(s.mid) + "</b></span>" +
+      '<span><i class="sw" style="background:' + cssVar("--b-high") + '"></i>Above ' + hi + ": <b>" + pctTxt(s.high) + "</b></span>";
+    $("stats-line").innerHTML = "<span>Average <b>" + f1(s.mean) + "</b></span><span>Median <b>" + f1(s.median) + "</b></span><span>SD <b>" + f1(s.sd) +
+      "</b></span><span>On the 10–40 scoring: average <b>" + f1(s.mean + 10) + "</b></span>";
+  }
+
+  /* ---------- Item analysis ---------- */
+  function renderItems() {
+    var s = view(groups()[focusIndex()]);
+    $("items-h").textContent = "Item analysis, " + termTitle();
+    if (!visible(s) || !s.items) {
+      $("items-sub").textContent = ""; $("items-key").innerHTML = "";
+      $("items").innerHTML = '<p class="suppressed">Hidden until at least ' + state.data.minN + " students have taken part.</p>";
+      return;
+    }
+    $("items-sub").textContent = s.n + " students. Overall α = " + r2(s.alpha) + ". Highlighted rows are reverse-scored.";
+    var pc = [cssVar("--p3"), cssVar("--p2"), cssVar("--p1"), cssVar("--p0")];   // index = 3 − points
+    var rows = ITEMS.map(function (it, j) {
+      var x = s.items[j];
+      // answers are in page order SA, A, D, SD. Points: SA = 3 normally, 0 when reversed
+      var segs = x.answers.map(function (v, a) {
+        var pts = it.reversed ? a : 3 - a;
+        return '<i style="width:' + (v || 0) + "%;background:" + pc[3 - pts] + '" title="' + ANSWERS[a] + ": " + pctTxt(v) + " (" + pts + ' points)"></i>';
+      }).join("");
+      var raises = x.alphaIfDropped != null && s.alpha != null && x.alphaIfDropped > s.alpha + 0.005;
+      return "<tr" + (it.reversed ? ' style="background:' + cssVar("--accent-soft") + '33"' : "") + '><td class="num">' + (j + 1) + '</td><td class="stmt">' + esc(it.text) +
+        (it.reversed ? '<span class="rev-tag">reversed</span>' : "") + '</td><td><div class="stack" role="img" aria-label="' +
+        ANSWERS.map(function (a, k) { return a + " " + pctTxt(x.answers[k]); }).join(", ") + '">' + segs + "</div></td>" +
+        '<td class="num">' + x.answers.map(function (v) { return Math.round(v || 0); }).join(" / ") + "</td>" +
+        '<td class="num"><b>' + f2(x.mean) + '</b></td><td class="num">' + r2(x.rit) + "</td>" +
+        '<td class="num' + (raises ? ' flag" title="Dropping this item would raise reliability' : "") + '">' + r2(x.alphaIfDropped) + (raises ? " ▲" : "") + "</td></tr>";
+    }).join("");
+    $("items").innerHTML = '<table><tr><th class="num">#</th><th>Statement</th><th>How students answered</th><th class="num">SA / A / D / SD %</th>' +
+      '<th class="num">Avg points (0–3)</th><th class="num">Item-total r</th><th class="num">α if dropped</th></tr>' + rows + "</table>";
+    $("items-key").innerHTML = "<span>Bar colour shows points earned:</span>" + [3, 2, 1, 0].map(function (p) {
+      return '<span><i class="sw" style="background:' + pc[3 - p] + '"></i>' + p + "</span>";
+    }).join("") + "<span>On reversed items, agreeing earns 0, so their bars run the other way.</span><span class=\"flag\">▲ dropping the item would raise α</span>";
+  }
+
+  /* ---------- Wording and response style ---------- */
+  function renderWording() {
+    var s = view(groups()[focusIndex()]);
+    $("word-h").textContent = "Wording and response style, " + termTitle();
+    if (!visible(s) || s.pos == null) { $("wording").innerHTML = '<p class="suppressed">Hidden until at least ' + state.data.minN + " students have taken part.</p>"; return; }
+    var diff = s.pos - s.neg;
+    var gapTxt = Math.abs(diff) < 0.15
+      ? "The class answered both kinds of statements about equally."
+      : diff > 0
+        ? "The class scored higher on the positively worded items than on the negatively worded ones, the common pattern: students readily agree they have good qualities while also admitting they feel useless at times."
+        : "The class rejected the negative statements more strongly than it endorsed the positive ones.";
+    var rTxt = s.posNegR == null ? "" : " The two halves correlate at r = " + r2(s.posNegR) + (s.posNegR < 0.5
+      ? ", lower than you might expect for one scale, which fits the research debate over whether the RSES measures one thing or two."
+      : ", so they mostly move together, as you’d expect if the scale measures one thing.");
+    var a = s.agree, pos = Math.max(0, Math.min(100, a / 3 * 100));
+    $("wording").innerHTML =
+      '<div class="pair"><div><div class="v">' + f2(s.pos) + '</div><div class="l">Positively worded items (1, 3, 4, 7, 10), average points</div></div>' +
+      '<div><div class="v">' + f2(s.neg) + '</div><div class="l">Negatively worded items (2, 5, 6, 8, 9), average points after flipping</div></div>' +
+      '<div><div class="v">' + r2(s.posNegR) + '</div><div class="l">Correlation between the two halves</div></div></div>' +
+      '<div class="prose"><p>' + gapTxt + rTxt + "</p></div>" +
+      '<h3 style="margin-top:20px">Agreement lean (acquiescence)</h3>' +
+      '<div class="meter" role="img" aria-label="Average agreement ' + f2(a) + ' on a 0 to 3 scale, where 1.5 is balanced"><span class="mid"></span><span class="pin" style="left:' + pos.toFixed(1) + '%"></span></div>' +
+      '<div class="meter-ends"><span>Disagrees with everything (0)</span><span>Balanced (1.5)</span><span>Agrees with everything (3)</span></div>' +
+      '<div class="prose" style="margin-top:10px"><p>Average agreement across all ten statements, ignoring what they say: <b>' + f2(a) + "</b>. " +
+      pctTxt(s.agreeHigh) + " of students averaged “agree” or stronger across the board. Because half the items are reversed, a pure “agree with everything” answerer lands at 15, in the middle, rather than looking high. That’s the classroom demo in numbers.</p></div>";
+  }
+
+  /* ---------- Sections in the focus term ---------- */
+  function renderSections() {
+    var g = groups()[focusIndex()], secs = g.sections || [];
+    $("sec-h").textContent = "Sections, " + g.label;
+    if (secs.length < 2) {
+      $("sec-sub").textContent = "";
+      $("sections").innerHTML = '<p class="suppressed">' + (secs.length ? "Only one section this term." : "No sections.") +
+        " Give each class its own link ending in <code>?section=P3</code> (and so on) to compare sections.</p>";
+      return;
+    }
+    $("sec-sub").textContent = "Darker cells are higher averages. Sections with fewer than " + state.data.minN + " students are hidden.";
+    var lo = cssVar("--seq-lo"), hi = cssVar("--seq-hi");
+    var rows = secs.map(function (s) {
+      if (!visible(s)) return "<tr><td>" + esc(s.section) + '</td><td class="num">' + s.n + '</td><td class="num suppressed" colspan="6">hidden</td></tr>';
+      var t = Math.max(0, Math.min(1, (s.mean - 14) / 12));
+      return "<tr" + (s.section === state.section ? ' style="font-weight:600"' : "") + "><td>" + esc(s.section) + '</td><td class="num">' + s.n + "</td>" +
+        '<td class="heat" style="background:' + mix(lo, hi, t) + ";color:" + (t > 0.7 ? "#fff" : "inherit") + '">' + f1(s.mean) + "</td>" +
+        '<td class="num">' + f1(s.sd) + '</td><td class="num">' + pctTxt(s.low) + '</td><td class="num">' + f2(s.pos) + '</td><td class="num">' + f2(s.neg) + '</td><td class="num">' + r2(s.alpha) + "</td></tr>";
+    }).join("");
+    $("sections").innerHTML = '<table><tr><th>Section</th><th class="num">Students</th><th class="num">Average</th><th class="num">SD</th><th class="num">Below ' +
+      state.data.bandLo + '</th><th class="num">Positive items</th><th class="num">Negative items</th><th class="num">α</th></tr>' + rows + "</table>";
+  }
+  function mix(a, b, t) {
+    var pa = hex(a), pb = hex(b);
+    if (!pa || !pb) return "transparent";
+    return "rgb(" + pa.map(function (v, i) { return Math.round(v + (pb[i] - v) * t); }).join(",") + ")";
+  }
+  function hex(h) {
+    var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h);
+    return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : null;
+  }
+
+  /* ---------- CSV of everything shown ---------- */
+  function downloadCsv() {
+    var gs = groups(), lo = state.data.bandLo, hi = state.data.bandHi;
+    var cols = ["Term", "Section", "Students", "Average (0-30)", "SD", "Median", "% below " + lo, "% " + lo + "-" + hi, "% above " + hi,
+      "Alpha", "Positive items avg", "Negative items avg", "Positive-negative r", "Agreement index", "% agreeing overall"];
+    ITEMS.forEach(function (_, j) { cols.push("Item " + (j + 1) + " avg points", "Item " + (j + 1) + " item-total r"); });
+    var lines = [cols];
+    gs.forEach(function (g) {
+      [{ s: g, name: "All sections" }].concat((g.sections || []).map(function (s) { return { s: s, name: s.section }; })).forEach(function (r) {
+        var s = r.s, v = visible(s), row = [g.label, r.name, s.n];
+        [s.mean, s.sd, s.median, s.low, s.mid, s.high, s.alpha, s.pos, s.neg, s.posNegR, s.agree, s.agreeHigh].forEach(function (x) { row.push(v && x != null ? x : ""); });
+        ITEMS.forEach(function (_, j) { var it = v && s.items ? s.items[j] : null; row.push(it ? it.mean : "", it && it.rit != null ? it.rit : ""); });
+        lines.push(row);
+      });
+    });
+    var csv = lines.map(function (r) {
+      return r.map(function (c) { c = String(c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(",");
+    }).join("\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = "self-esteem-" + (state.grain === "years" ? "by-year" : "by-semester") + ".csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+
+  /* ---------- Sample data for ?demo: made-up students, run through the same math as Code.gs ---------- */
+  function demoData() {
+    var seed = 11;
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    function gauss() { return Math.sqrt(-2 * Math.log(rnd() + 1e-9)) * Math.cos(2 * Math.PI * rnd()); }
+    var REV = ITEMS.map(function (it) { return it.reversed; });
+    function student(level) {
+      var lean = gauss() * 0.25;   // a little acquiescence for some students
+      return REV.map(function (rev, j) {
+        var p = level + gauss() * 0.55 + (rev ? -0.15 - lean : lean) + (j === 7 ? -0.3 : 0);
+        return Math.max(0, Math.min(3, Math.round(p)));
+      });
+    }
+    var terms = [["2023-2", "Fall 2023"], ["2024-1", "Spring 2024"], ["2024-2", "Fall 2024"], ["2025-1", "Spring 2025"], ["2025-2", "Fall 2025"], ["2026-1", "Spring 2026"], ["2026-2", "Fall 2026"]];
+    var secNames = ["P2", "P4", "P6"], rows = [];
+    terms.forEach(function (tm, t) {
+      secNames.forEach(function (sn, k) {
+        var n = t === terms.length - 1 && k === 2 ? 3 : 12 + Math.floor(rnd() * 10);
+        for (var i = 0; i < n; i++) rows.push({ term: tm, sec: sn, items: student(2.3 + Math.sin(t * 1.3) * 0.06 + (k - 1) * 0.08 + gauss() * 0.45) });
+      });
+    });
+    function stats(list) {
+      var n = list.length;
+      if (n < 5) return { n: n };
+      var items = list.map(function (r) { return r.items; }), k = 10;
+      var tot = items.map(sum), hist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      tot.forEach(function (x) { hist[Math.min(9, Math.floor(x / 3))]++; });
+      var idx = range(k), alpha = cronbach(items, idx);
+      var pos = items.map(function (v) { return mean(idx.filter(function (j) { return !REV[j]; }).map(function (j) { return v[j]; })); });
+      var neg = items.map(function (v) { return mean(idx.filter(function (j) { return REV[j]; }).map(function (j) { return v[j]; })); });
+      var agree = items.map(function (v) { return mean(v.map(function (p, j) { return REV[j] ? 3 - p : p; })); });
+      return {
+        n: n, mean: rd(mean(tot)), sd: rd(Math.sqrt(variance(tot))), median: median(tot),
+        low: pc(tot.filter(function (x) { return x < 15; }).length, n), mid: pc(tot.filter(function (x) { return x >= 15 && x <= 25; }).length, n), high: pc(tot.filter(function (x) { return x > 25; }).length, n),
+        hist: hist.map(function (c) { return pc(c, n); }), alpha: alpha,
+        items: idx.map(function (j) {
+          var col = items.map(function (v) { return v[j]; }), raw = col.map(function (p) { return REV[j] ? p : 3 - p; });
+          return { mean: rd(mean(col)), sd: rd(Math.sqrt(variance(col))), answers: [0, 1, 2, 3].map(function (c) { return pc(raw.filter(function (x) { return x === c; }).length, n); }),
+            rit: pearson(col, items.map(function (v) { return sum(v) - v[j]; })), alphaIfDropped: cronbach(items, idx.filter(function (x) { return x !== j; })) };
+        }),
+        pos: rd(mean(pos)), neg: rd(mean(neg)), posNegR: pearson(pos, neg), agree: rd(mean(agree)), agreeHigh: pc(agree.filter(function (a) { return a >= 2; }).length, n)
+      };
+    }
+    function group(keyOf, labelOf) {
+      var by = {};
+      rows.forEach(function (r) { (by[keyOf(r)] = by[keyOf(r)] || []).push(r); });
+      return Object.keys(by).sort().map(function (key) {
+        var g = stats(by[key]); g.key = key; g.label = labelOf(by[key][0]);
+        g.sections = secNames.map(function (sn) { var s = stats(by[key].filter(function (r) { return r.sec === sn; })); s.section = sn; return s; });
+        return g;
+      });
+    }
+    function yearOf(r) { var y = Number(r.term[0].slice(0, 4)), sy = r.term[0].slice(5) === "2" ? y : y - 1; return sy + "-" + String(sy + 1).slice(2); }
+    return { ok: true, minN: 5, bandLo: 15, bandHi: 25, total: rows.length,
+      semesters: group(function (r) { return r.term[0]; }, function (r) { return r.term[1]; }),
+      years: group(yearOf, yearOf) };
+  }
+  // the same statistics Code.gs uses
+  function sum(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+  function range(n) { var o = []; for (var i = 0; i < n; i++) o.push(i); return o; }
+  function mean(a) { return a.length ? sum(a) / a.length : null; }
+  function variance(a) { if (a.length < 2) return 0; var m = mean(a); return a.reduce(function (x, v) { return x + (v - m) * (v - m); }, 0) / (a.length - 1); }
+  function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }), h = Math.floor(s.length / 2); return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; }
+  function rd(v) { return v == null ? null : Math.round(v * 100) / 100; }
+  function pc(h, t) { return t ? Math.round(h / t * 1000) / 10 : null; }
+  function cronbach(items, idx) {
+    if (idx.length < 2 || items.length < 3) return null;
+    var iv = idx.reduce(function (a, j) { return a + variance(items.map(function (v) { return v[j]; })); }, 0);
+    var tv = variance(items.map(function (v) { return idx.reduce(function (a, j) { return a + v[j]; }, 0); }));
+    return tv ? rd(idx.length / (idx.length - 1) * (1 - iv / tv)) : null;
+  }
+  function pearson(xs, ys) {
+    if (xs.length < 3) return null;
+    var mx = mean(xs), my = mean(ys), sxy = 0, sxx = 0, syy = 0;
+    for (var i = 0; i < xs.length; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) * (xs[i] - mx); syy += (ys[i] - my) * (ys[i] - my); }
+    return sxx && syy ? rd(sxy / Math.sqrt(sxx * syy)) : null;
+  }
+
+  /* ---------- Wiring ---------- */
+  $("grain").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    state.grain = b.getAttribute("data-grain"); state.focus = null;
+    $("grain").querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    render();
+  });
+  $("section").addEventListener("change", function () { state.section = this.value; state.focus = null; render(); });
+  $("focus").addEventListener("change", function () { state.focus = Number(this.value); render(); });
+  $("refresh").addEventListener("click", load);
+  $("csv").addEventListener("click", downloadCsv);
+  $("signout").addEventListener("click", function () {
+    forgetKey(); state.data = null;
+    if (DEMO) { location.href = location.pathname; return; }
+    showConnect();
+  });
+  $("key-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var k = $("key").value.trim(); if (!k) return;
+    saveKey(k, $("remember").checked);
+    $("key").value = "";
+    $("key-err").hidden = true;
+    load();
+  });
+  var rt;
+  window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(render, 150); });
+  if (window.matchMedia) {
+    var mq = matchMedia("(prefers-color-scheme: dark)");
+    if (mq.addEventListener) mq.addEventListener("change", render);
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

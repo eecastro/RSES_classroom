@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rosenberg Self-Esteem Scale · Psych 100</title>
-<meta name="description" content="Take the 10-item Rosenberg Self-Esteem Scale and see how it’s scored. Your answers stay in your browser.">
+<meta name="description" content="Take the 10-item Rosenberg Self-Esteem Scale and see how it’s scored. Anonymous: no name or email is ever asked for.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%231f3b32'/></svg>">
 <style>
 /* =========================================================
@@ -200,6 +200,14 @@ h3 { font-size: 1.2rem; margin: 2.5rem 0 .6rem; font-weight: 600; }
 .tick-row span { position: absolute; top: .45rem; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
 .tick-row span:first-child { transform: none; }
 .tick-row span:last-child { transform: translateX(-100%); }
+.marker.class-avg {
+  background: var(--paper); box-shadow: 0 0 0 2px var(--amber); border-color: var(--paper);
+  width: .9rem; height: .9rem; margin-left: -.45rem; bottom: -.45rem;
+}
+.marker[hidden] { display: none; }
+.class-line { font-family: var(--sans); font-size: .9rem; color: var(--ink-soft); margin: .5rem 0 0; }
+.class-line .ring { display: inline-block; width: .75rem; height: .75rem; border-radius: 50%; box-shadow: 0 0 0 2px var(--amber); margin-right: .4rem; vertical-align: -.05rem; }
+.save-status { font-family: var(--sans); font-size: .85rem; color: var(--ink-soft); margin: .25rem 0 0; }
 .scale-caption { font-family: var(--sans); font-size: .82rem; color: var(--ink-soft); margin: .4rem 0 0; }
 
 .interp { margin: 1.5rem 0 0; }
@@ -248,7 +256,7 @@ footer { margin-top: 3rem; font-family: var(--sans); font-size: .82rem; color: v
 }
 @media print {
   :root { --paper: #fff; --sheet: #fff; }
-  #quiz, .after, .privacy { display: none !important; }
+  #quiz, .after, .privacy, .save-status { display: none !important; }
   #results { margin-top: 0; }
   body { font-size: 11pt; }
   tr.rev td { background: #f3f3f3; }
@@ -262,7 +270,7 @@ footer { margin-top: 3rem; font-family: var(--sans); font-size: .82rem; color: v
   <p class="course" id="courseName">Psych 100</p>
   <h1>Rosenberg Self-Esteem Scale</h1>
   <p class="lede">Ten statements about how you generally feel about yourself. It takes about two minutes. When you’re done, you’ll see your score and how the scale works behind the scenes.</p>
-  <p class="privacy">Your answers stay on this device. Nothing is saved or sent anywhere, so your instructor can’t see your responses. Refreshing the page clears everything.</p>
+  <p class="privacy" id="privacy">Your answers stay on this device. Nothing is saved or sent anywhere, so your instructor can’t see your responses. Refreshing the page clears everything.</p>
 </header>
 
 <form id="quiz" class="sheet" novalidate>
@@ -292,11 +300,14 @@ footer { margin-top: 3rem; font-family: var(--sans); font-size: .82rem; color: v
   <div class="scale" aria-hidden="true">
     <div class="track" id="track">
       <div class="band" id="band"><span>Typical range (15–25)</span></div>
+      <div class="marker class-avg" id="classMarker" hidden></div>
       <div class="marker" id="marker"></div>
     </div>
     <div class="tick-row" id="ticks"></div>
   </div>
   <p class="scale-caption">The dot is your score. The shaded band is a common rule of thumb for the typical range, not an official cutoff.</p>
+  <p class="class-line" id="classLine" hidden></p>
+  <p class="save-status" id="saveStatus" aria-live="polite" hidden></p>
 
   <p class="interp" id="interp"></p>
   <div class="care" id="care" hidden></div>
@@ -362,8 +373,17 @@ const CONFIG = {
   courseName: "Social-Cognitive Psychology",
   // Your campus counseling center. Leave url as "" to hide the link.
   counselingName: "St. Ignatius Wellness Counseling Department",
-  counselingUrl: "https://sites.google.com/siprep.org/wellness/home"
+  counselingUrl: "https://sites.google.com/siprep.org/wellness/home",
+  // Anonymous class results (see README). Paste your Apps Script web app URL (ends in /exec).
+  // Leave it as "" and the page saves nothing, exactly like the original version.
+  sheetUrl: "",
+  // One sentence about consent, shown in the privacy note when saving is on. Only fill this in
+  // if it is true for your students, e.g. "This is the anonymous data collection you and your
+  // parents agreed to for this course."
+  consentNote: "",
+  minClassN: 5   // hide the class average until this many students have taken part (match MIN_N in Code.gs)
 };
+const PAGE_VERSION = "2026.1";
 
 /* ---------- Scale definition ---------- */
 const ITEMS = [
@@ -388,6 +408,73 @@ const MAX = 30, BAND_LO = 15, BAND_HI = 25;
 
 /* ---------- Build the answer sheet ---------- */
 document.getElementById("courseName").textContent = CONFIG.courseName;
+
+/* ---------- Anonymous class results (only when sheetUrl is set) ---------- */
+const SHARING = /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(CONFIG.sheetUrl);
+// Optional section code from the link, e.g. ...github.io/RSES_classroom/?section=P3
+const SECTION = (new URLSearchParams(location.search).get("section") || "").replace(/[^A-Za-z0-9 \-]/g, "").slice(0, 20);
+if (SHARING) {
+  document.getElementById("privacy").textContent =
+    "This page never asks for your name or email. When you see your results, your 10 answers and your score are saved " +
+    "anonymously to your class’s results, with the date only. Your instructor sees class totals, never one student’s answers, " +
+    "and class averages stay hidden until at least " + CONFIG.minClassN + " students have taken part." +
+    (CONFIG.consentNote ? " " + CONFIG.consentNote : "");
+}
+// A random ID lets a changed answer update the same row instead of adding a new one.
+// It's kept only for this tab (sessionStorage), so it can't follow a student or a device.
+function subId() {
+  let id = null;
+  try { id = sessionStorage.getItem("rses-sub-id"); } catch (e) {}
+  if (!id) {
+    id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+      : "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12);
+    try { sessionStorage.setItem("rses-sub-id", id); } catch (e) {}
+  }
+  return id;
+}
+let classStats = null;
+function loadClassStats() {
+  if (!SHARING) return;
+  fetch(CONFIG.sheetUrl + "?t=" + Date.now())
+    .then(r => r.json())
+    .then(d => { if (d && d.ok) { classStats = d; renderClass(); } })
+    .catch(() => { /* the class average is optional; the page works without it */ });
+}
+function saveAnswers(a) {
+  if (!SHARING) return;
+  const status = document.getElementById("saveStatus");
+  status.hidden = false;
+  status.textContent = "Saving your answers anonymously…";
+  // text/plain + no-cors avoids a CORS preflight, which Apps Script can’t answer
+  fetch(CONFIG.sheetUrl, {
+    method: "POST", mode: "no-cors", keepalive: true,
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ id: subId(), v: PAGE_VERSION, section: SECTION, items: a.map((opt, i) => pointsFor(i, opt)) })
+  }).then(() => {
+    status.textContent = "Saved anonymously to your class’s results.";
+    setTimeout(loadClassStats, 2000);
+  }).catch(() => {
+    status.textContent = "Couldn’t reach the class results, so your answers weren’t saved. Your results below are unaffected.";
+  });
+}
+function renderClass() {
+  const line = document.getElementById("classLine");
+  const mk = document.getElementById("classMarker");
+  if (!classStats) return;
+  const pick = classStats.thisYear && classStats.thisYear.n >= CONFIG.minClassN
+    ? { s: classStats.thisYear, label: classStats.currentYear }
+    : classStats.allTime && classStats.allTime.n >= CONFIG.minClassN ? { s: classStats.allTime, label: "all years" } : null;
+  line.hidden = false;
+  if (!pick) {
+    mk.hidden = true;
+    line.textContent = "Your class’s average appears once at least " + CONFIG.minClassN + " students have taken part.";
+    return;
+  }
+  mk.hidden = false;
+  mk.style.left = (pick.s.mean / MAX * 100) + "%";
+  line.innerHTML = '<span class="ring" aria-hidden="true"></span>Class average (' + pick.label + "): " +
+    pick.s.mean.toFixed(1) + " out of 30, from " + pick.s.n + " students.";
+}
 const itemsEl = document.getElementById("items");
 ITEMS.forEach((item, i) => {
   const n = i + 1;
@@ -450,6 +537,7 @@ form.addEventListener("submit", e => {
     return;
   }
   showResults(a);
+  saveAnswers(a);
 });
 
 function smooth() {
@@ -525,6 +613,7 @@ function showResults(a) {
   note += " Researchers have found that the two kinds of items sometimes behave like separate clusters, partly because of how they’re worded. That’s a live debate about whether the scale measures one thing or two.";
   document.getElementById("compareNote").textContent = note;
 
+  renderClass();
   const res = document.getElementById("results");
   res.hidden = false;
   res.scrollIntoView({ behavior: smooth(), block: "start" });
@@ -532,10 +621,12 @@ function showResults(a) {
 }
 
 document.getElementById("printBtn").addEventListener("click", () => window.print());
+loadClassStats();
 document.getElementById("resetBtn").addEventListener("click", () => {
   form.reset();
   document.querySelectorAll("fieldset.item").forEach(f => f.classList.remove("missing"));
   document.getElementById("results").hidden = true;
+  document.getElementById("saveStatus").hidden = true;
   updateProgress();
   window.scrollTo({ top: 0, behavior: smooth() });
 });
